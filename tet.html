@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Câu Chúc Tết</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0005;
+    --card: rgba(30,5,10,0.85);
+    --border: rgba(220,60,60,0.25);
+    --red: #e03030;
+    --red2: #ff6060;
+    --gold: #f5c96a;
+    --gold2: #e8a83c;
+    --text: #fff5e6;
+    --muted: rgba(255,245,230,0.5);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Fireworks canvas */
+  #fireworks-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Warm ambient glow */
+  .bg-glow {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(160,20,20,0.25) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 20% 80%, rgba(200,80,0,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(200,80,0,0.1) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Lanterns */
+  .lanterns {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-around;
+    pointer-events: none;
+    z-index: 1;
+    padding: 0 2rem;
+  }
+
+  .lantern {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: top center;
+    animation: sway var(--s) var(--d) ease-in-out infinite alternate;
+  }
+
+  .lantern-body {
+    width: 22px;
+    height: 30px;
+    background: radial-gradient(ellipse at 40% 40%, #ff8c00, #cc2200);
+    border-radius: 50% 50% 60% 60% / 40% 40% 60% 60%;
+    box-shadow: 0 0 12px rgba(255,100,0,0.7), 0 0 25px rgba(200,30,0,0.4);
+    position: relative;
+  }
+
+  .lantern-body::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 8px;
+    background: #ffd700;
+    box-shadow: 0 0 4px gold;
+  }
+
+  .lantern-string {
+    width: 1px;
+    height: 30px;
+    background: rgba(255,200,100,0.5);
+  }
+
+  @keyframes sway {
+    from { transform: rotate(-8deg); }
+    to   { transform: rotate(8deg); }
+  }
+
+  /* Main wrapper */
+  .wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 660px;
+    text-align: center;
+    margin-top: 60px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 2rem;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .header-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+    opacity: 0.85;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #f5c96a 0%, #ff6060 40%, #f5c96a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+
+  .header-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem 2.5rem 2rem;
+    position: relative;
+    animation: fadeUp 0.8s 0.2s ease both;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(245,201,106,0.12);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Red decorative corners */
+  .card::before, .card::after {
+    content: '❧';
+    position: absolute;
+    font-size: 1.4rem;
+    color: var(--red);
+    opacity: 0.5;
+  }
+  .card::before { top: 0.8rem; left: 1rem; }
+  .card::after  { bottom: 0.8rem; right: 1rem; transform: scaleX(-1); }
+
+  .ornament {
+    font-size: 3.5rem;
+    line-height: 1;
+    margin-bottom: 1rem;
+    display: block;
+    transition: transform 0.4s cubic-bezier(.36,.07,.19,.97);
+  }
+
+  .ornament.bounce {
+    animation: bounce-in 0.5s cubic-bezier(.36,.07,.19,.97);
+  }
+
+  @keyframes bounce-in {
+    0%   { transform: scale(0.5) rotate(-15deg); }
+    60%  { transform: scale(1.2) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .quote-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,201,106,0.1);
+    border: 1px solid rgba(245,201,106,0.2);
+    border-radius: 999px;
+    padding: 0.2rem 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .quote-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.15rem, 2.8vw, 1.5rem);
+    font-style: italic;
+    line-height: 1.75;
+    color: var(--text);
+    min-height: 5.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s, transform 0.3s;
+    padding: 0 0.5rem;
+  }
+
+  .quote-text.fade-out { opacity: 0; transform: translateY(12px) scale(0.98); }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 1.2rem 0;
+    opacity: 0.4;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold));
+  }
+  .divider::after { background: linear-gradient(to left, transparent, var(--gold)); }
+  .divider span { color: var(--gold); font-size: 0.8rem; }
+
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    padding: 0.35rem 1rem;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-copy:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-copy.copied { color: #6fdf8a; border-color: #6fdf8a; }
+
+  /* Buttons row */
+  .btns {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    margin-top: 1.8rem;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.35s ease both;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.85rem 2rem;
+    background: linear-gradient(135deg, #e03030, #a01010);
+    border: none;
+    border-radius: 999px;
+    color: #fff5e6;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 28px rgba(200,30,30,0.4);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(200,30,30,0.55); }
+  .btn:active { transform: translateY(0); }
+  .btn svg { width: 17px; height: 17px; transition: transform 0.4s; }
+  .btn:hover svg { transform: rotate(180deg); }
+
+  .btn-firework {
+    background: linear-gradient(135deg, #f5c96a, #d4922a);
+    color: #1a0800;
+    box-shadow: 0 8px 28px rgba(212,146,42,0.35);
+  }
+  .btn-firework:hover { box-shadow: 0 12px 36px rgba(212,146,42,0.5); }
+
+  .counter {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 1.2rem;
+    letter-spacing: 0.1em;
+    animation: fadeUp 0.8s 0.5s ease both;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="fireworks-canvas"></canvas>
+<div class="bg-glow"></div>
+
+<!-- Lanterns -->
+<div class="lanterns" id="lanterns"></div>
+
+<div class="wrapper">
+  <div class="header">
+    <p class="header-label">🧧 Xuân Ất Tỵ 2025 🧧</p>
+    <h1>Lời Chúc Tết</h1>
+    <p class="header-sub">Những lời chúc ngẫu nhiên gửi đến người thân yêu</p>
+  </div>
+
+  <div class="card">
+    <span class="ornament" id="ornament">🎆</span>
+    <div class="quote-tag" id="quote-tag">✦ CÂU CHÚC TẾT ✦</div>
+    <p class="quote-text" id="quote-text">Nhấn nút bên dưới để nhận câu chúc Tết đặc biệt!</p>
+    <div class="divider"><span>🌸</span></div>
+    <button class="btn-copy" id="btn-copy" onclick="copyQuote()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Sao chép
+    </button>
+  </div>
+
+  <div class="btns">
+    <button class="btn" onclick="newQuote()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16"/>
+      </svg>
+      Câu chúc mới
+    </button>
+    <button class="btn btn-firework" onclick="launchBurst()">
+      🎆 Bắn pháo hoa
+    </button>
+  </div>
+
+  <p class="counter" id="counter">0 / 0 câu chúc</p>
+</div>
+
+<script>
+// ─── Quotes ───────────────────────────────────────────────
+const quotes = [
+  { text: "Chúc mừng năm mới! Mong năm mới mang đến cho bạn và gia đình sức khỏe dồi dào, tài lộc phát sinh và hạnh phúc viên mãn.", ornament: "🎆" },
+  { text: "Xuân về trăm hoa đua nở, chúc bạn năm mới vạn sự như ý, an khang thịnh vượng và phúc lộc đầy nhà.", ornament: "🌸" },
+  { text: "Pháo hoa rực sáng đêm giao thừa, chúc mọi ước nguyện của bạn thành hiện thực trong năm Ất Tỵ này.", ornament: "🎇" },
+  { text: "Vạn sự như ý, ngàn điều tốt lành, hạnh phúc tràn đầy. Kính chúc năm mới an lành, thịnh vượng và bình an!", ornament: "🧧" },
+  { text: "Năm cũ qua đi mang theo mọi lo toan, năm mới đến trao bạn muôn ngàn yêu thương, may mắn và thành công.", ornament: "🌟" },
+  { text: "Tết đến xuân về, chúc bạn mạnh khỏe như voi, tiền vào như nước, hạnh phúc mãi mãi bên gia đình!", ornament: "🐘" },
+  { text: "Chúc gia đình bạn năm mới Ất Tỵ: Sức khỏe như ý, tài lộc dồi dào, con cháu thành đạt, nhà nhà yên vui.", ornament: "🏮" },
+  { text: "Mùa xuân là mùa của yêu thương và hy vọng. Chúc bạn năm mới tràn đầy niềm vui và những điều kỳ diệu!", ornament: "🌺" },
+  { text: "Giao thừa tiếng pháo vang trời, chúc bạn năm mới phát tài phát lộc, sự nghiệp rộng mở, gia đình hòa thuận.", ornament: "🎊" },
+  { text: "Chúc bạn năm mới: Nhất bản vạn lợi — một vốn muôn lời, sức khỏe dồi dào, tình yêu trọn vẹn!", ornament: "💰" },
+  { text: "Xuân sang đất trời tươi sáng, chúc bạn và người thân mạnh khỏe, bình an, hạnh phúc suốt năm dài.", ornament: "☀️" },
+  { text: "Ngày Tết sum vầy, chúc gia đình bạn luôn đầm ấm, con cháu hiếu thảo, và mọi điều tốt lành mãi mãi.", ornament: "🥟" },
+  { text: "Chúc năm mới công việc hanh thông, tiền bạc rủng rỉnh, tình duyên thuận lợi và sức khỏe dồi dào!", ornament: "🎋" },
+  { text: "Đón Tết với trái tim rộng mở. Chúc bạn năm Ất Tỵ gặp nhiều may mắn, vượt qua mọi thử thách và tỏa sáng!", ornament: "🐍" },
+  { text: "Năm mới, vận mới, vui mới! Chúc bạn luôn gặp điều hay, tiền vào đầy túi, sức khỏe tràn đầy, hạnh phúc lâu dài.", ornament: "🎉" },
+  { text: "Cung chúc tân xuân! Kính chúc bạn cùng gia đình một năm mới bình an, thịnh vượng và tràn ngập tiếng cười.", ornament: "🌼" },
+];
+
+let shownIndexes = [];
+let currentQuote = null;
+
+function updateCounter() {
+  document.getElementById('counter').textContent = `${shownIndexes.length} / ${quotes.length} câu chúc`;
+}
+
+function newQuote() {
+  if (shownIndexes.length >= quotes.length) shownIndexes = [];
+  const remaining = quotes.map((_, i) => i).filter(i => !shownIndexes.includes(i));
+  const idx = remaining[Math.floor(Math.random() * remaining.length)];
+  shownIndexes.push(idx);
+  currentQuote = quotes[idx];
+
+  const el = document.getElementById('quote-text');
+  const orn = document.getElementById('ornament');
+  el.classList.add('fade-out');
+  setTimeout(() => {
+    el.textContent = currentQuote.text;
+    orn.textContent = currentQuote.ornament;
+    el.classList.remove('fade-out');
+    orn.classList.remove('bounce');
+    void orn.offsetWidth;
+    orn.classList.add('bounce');
+    const copyBtn = document.getElementById('btn-copy');
+    copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Sao chép`;
+    copyBtn.classList.remove('copied');
+  }, 300);
+
+  launchBurst(true);
+  updateCounter();
+}
+
+function copyQuote() {
+  if (!currentQuote) return;
+  navigator.clipboard.writeText(currentQuote.text).then(() => {
+    const btn = document.getElementById('btn-copy');
+    btn.innerHTML = `✓ Đã sao chép`;
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Sao chép`;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ─── Fireworks Engine ─────────────────────────────────────
+const canvas = document.getElementById('fireworks-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+const particles = [];
+const rockets = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Festive colors (reds, golds, greens, whites)
+const palettes = [
+  ['#ff3030','#ff6060','#ff9090','#ffcccc'],
+  ['#f5c96a','#ffd700','#ffeb99','#fff5cc'],
+  ['#30cc60','#60ee90','#a0ffb0','#ccffdd'],
+  ['#ff8c00','#ffaa40','#ffcc88','#ffe4bb'],
+  ['#cc44ff','#ee88ff','#ffbbff','#ffd9ff'],
+  ['#ffffff','#ffffee','#fff0cc','#ffe8dd'],
+];
+
+class Particle {
+  constructor(x, y, color) {
+    this.x = x; this.y = y;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1.5 + Math.random() * 4.5;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed - 1;
+    this.color = color;
+    this.life = 1;
+    this.decay = 0.012 + Math.random() * 0.018;
+    this.size = 2 + Math.random() * 2.5;
+    this.gravity = 0.06;
+    this.trail = [];
+  }
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 5) this.trail.shift();
+    this.vy += this.gravity;
+    this.vx *= 0.98;
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life -= this.decay;
+  }
+  draw() {
+    ctx.save();
+    for (let i = 0; i < this.trail.length; i++) {
+      const a = (i / this.trail.length) * this.life * 0.4;
+      ctx.beginPath();
+      ctx.arc(this.trail[i].x, this.trail[i].y, this.size * (i / this.trail.length), 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = a;
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.life;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.color;
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+class Rocket {
+  constructor(x) {
+    this.x = x ?? (W * 0.2 + Math.random() * W * 0.6);
+    this.y = H;
+    this.targetY = H * 0.1 + Math.random() * H * 0.45;
+    this.speed = 8 + Math.random() * 6;
+    this.color = '#ffeecc';
+    this.trail = [];
+  }
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 10) this.trail.shift();
+    this.y -= this.speed;
+  }
+  draw() {
+    ctx.save();
+    for (let i = 0; i < this.trail.length; i++) {
+      ctx.beginPath();
+      ctx.arc(this.trail[i].x, this.trail[i].y, 2 * (i / this.trail.length), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,220,100,${(i / this.trail.length) * 0.6})`;
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = '#ffcc66';
+    ctx.globalAlpha = 1;
+    ctx.fill();
+    ctx.restore();
+  }
+  explode() {
+    const palette = palettes[Math.floor(Math.random() * palettes.length)];
+    const count = 80 + Math.floor(Math.random() * 60);
+    for (let i = 0; i < count; i++) {
+      particles.push(new Particle(this.x, this.y, palette[Math.floor(Math.random() * palette.length)]));
+    }
+    // Sparkle ring
+    for (let i = 0; i < 20; i++) {
+      const p = new Particle(this.x, this.y, '#ffffff');
+      const angle = (i / 20) * Math.PI * 2;
+      p.vx = Math.cos(angle) * 6;
+      p.vy = Math.sin(angle) * 6;
+      p.size = 1.5;
+      p.decay = 0.03;
+      particles.push(p);
+    }
+  }
+}
+
+function spawnRocket(x) {
+  rockets.push(new Rocket(x));
+}
+
+function launchBurst(small = false) {
+  const count = small ? 2 : 4;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => spawnRocket(), i * 200 + Math.random() * 150);
+  }
+}
+
+function loop() {
+  ctx.fillStyle = 'rgba(10,0,5,0.18)';
+  ctx.fillRect(0, 0, W, H);
+
+  for (let i = rockets.length - 1; i >= 0; i--) {
+    rockets[i].update();
+    rockets[i].draw();
+    if (rockets[i].y <= rockets[i].targetY) {
+      rockets[i].explode();
+      rockets.splice(i, 1);
+    }
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update();
+    particles[i].draw();
+    if (particles[i].life <= 0) particles.splice(i, 1);
+  }
+
+  requestAnimationFrame(loop);
+}
+loop();
+
+// Auto launch every 4s
+setInterval(() => launchBurst(true), 4000);
+// Initial show
+setTimeout(() => launchBurst(), 600);
+
+// ─── Lanterns ─────────────────────────────────────────────
+const lanternContainer = document.getElementById('lanterns');
+for (let i = 0; i < 7; i++) {
+  const l = document.createElement('div');
+  l.className = 'lantern';
+  l.style.cssText = `--s:${2+Math.random()*2}s; --d:${Math.random()*1.5}s`;
+  l.innerHTML = `<div class="lantern-string"></div><div class="lantern-body"></div>`;
+  lanternContainer.appendChild(l);
+}
+
+// ─── Init ─────────────────────────────────────────────────
+updateCounter();
+</script>
+</body>
+</html>

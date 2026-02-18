@@ -318,7 +318,7 @@
 
 <div class="wrapper">
   <div class="header">
-    <p class="header-label">🧧 Xuân Ất Tỵ 2025 🧧</p>
+    <p class="header-label">🧧 Xuân Bính Ngọ 2026 🧧</p>
     <h1>Lời Chúc Tết</h1>
     <p class="header-sub">Những lời chúc ngẫu nhiên gửi đến người thân yêu</p>
   </div>
@@ -345,8 +345,6 @@
       🎆 Bắn pháo hoa
     </button>
   </div>
-
-  <p class="counter" id="counter">0 / 0 câu chúc</p>
 </div>
 
 <script>
@@ -372,16 +370,13 @@ const quotes = [
 
 let shownIndexes = [];
 let currentQuote = null;
-
-function updateCounter() {
-  document.getElementById('counter').textContent = `${shownIndexes.length} / ${quotes.length} câu chúc`;
-}
+let lastIdx = -1;
 
 function newQuote() {
-  if (shownIndexes.length >= quotes.length) shownIndexes = [];
-  const remaining = quotes.map((_, i) => i).filter(i => !shownIndexes.includes(i));
-  const idx = remaining[Math.floor(Math.random() * remaining.length)];
-  shownIndexes.push(idx);
+  // Pure random, tránh trùng câu liền trước
+  let idx;
+  do { idx = Math.floor(Math.random() * quotes.length); } while (idx === lastIdx && quotes.length > 1);
+  lastIdx = idx;
   currentQuote = quotes[idx];
 
   const el = document.getElementById('quote-text');
@@ -399,8 +394,7 @@ function newQuote() {
     copyBtn.classList.remove('copied');
   }, 300);
 
-  launchBurst(true);
-  updateCounter();
+  launchBurst(true);  
 }
 
 function copyQuote() {
